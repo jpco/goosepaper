@@ -63,6 +63,7 @@ def construct_story_providers_from_config_dict(config: dict):
     from goosepaper.storyprovider.storyprovider import CustomTextStoryProvider
     from goosepaper.storyprovider.weather import OpenMeteoWeatherStoryProvider
     from goosepaper.storyprovider.wikipedia import WikipediaCurrentEventsStoryProvider
+    from goosepaper.storyprovider.nws import NWSStoryProvider
 
     StoryProviderConfigNames = {
         "lorem": CustomTextStoryProvider,
@@ -73,6 +74,7 @@ def construct_story_providers_from_config_dict(config: dict):
         "openmeteo_weather": OpenMeteoWeatherStoryProvider,
         "wikipedia_current_events": WikipediaCurrentEventsStoryProvider,
         "rss": RSSFeedStoryProvider,
+        "nws": NWSStoryProvider,
     }
 
     if "stories" not in config:

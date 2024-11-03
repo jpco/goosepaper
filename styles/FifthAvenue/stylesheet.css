@@ -100,3 +100,16 @@ figure>span {
     column-count: 2;
     column-gap: 2rem;
 }
+
+/* hack for low tech magazine */
+svg.dither-toggle {
+    display: none;
+}
+.imgindicator {
+    display: none;
+}
+
+/* hack for pre elements so they don't overflow */
+pre {
+    white-space: pre-wrap;
+}

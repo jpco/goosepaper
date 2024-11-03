@@ -163,13 +163,28 @@ class Goosepaper:
                 then this will return None.
 
         """
-        from weasyprint import HTML, CSS
+        from weasyprint import HTML, CSS, default_url_fetcher
         from weasyprint.text.fonts import FontConfiguration
+
+        # Bizarre hack.  There are certain URLs that urllib (as wielded by weasyprint's
+        # default_url_fetcher can't actually fetch, but the requests library can.  I can't
+        # figure out why this is the case, so, instead, just do this.
+        def fallback_fetcher(url):
+            try:
+                return default_url_fetcher(url)
+            except:
+                import io
+                import requests
+
+                r = requests.get(url)
+                r.raw.decode_content = True
+                b = io.BytesIO(r.content)
+                return {'string': b.read()}
 
         font_config = FontConfiguration()
         style_obj = _get_style(style)
         html = self.to_html()
-        h = HTML(string=html)
+        h = HTML(string=html, url_fetcher=fallback_fetcher)
         base_url = str(pathlib.Path.cwd())
         c = CSS(
             string=style_obj.get_css(font_size),
