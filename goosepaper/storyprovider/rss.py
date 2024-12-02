@@ -47,7 +47,7 @@ class RSSFeedStoryProvider(StoryProvider):
                     byline=source,
                     date=date,
                 )
-            else:
+            elif req.content != b'':
                 doc = Document(req.content)
                 story = Story(
                     doc.title(),
@@ -55,6 +55,9 @@ class RSSFeedStoryProvider(StoryProvider):
                     byline=source,
                     date=date,
                 )
+            else:
+                print(f"Sad honk :/ Empty response from feed {self.feed_url}...")
+                continue
 
             stories.append(story)
             if len(stories) >= limit:
