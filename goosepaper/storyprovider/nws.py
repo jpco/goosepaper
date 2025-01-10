@@ -13,10 +13,12 @@ class NWSStoryProvider(StoryProvider):
         lat: float,
         lon: float,
         F: bool,
-        products: List[str] = []
+        products: List[str] = [],
+        alerts: bool = False
     ) -> None:
         self.units = 'us' if F else 'si'
         self.products = products
+        self.alerts = alerts
 
         pointsResp = requests.get(
                 f"https://api.weather.gov/points/{lat},{lon}"
@@ -43,11 +45,7 @@ class NWSStoryProvider(StoryProvider):
                 case _:
                     topic = re.match(r'\.?([\w/ ]+)\.\.\.', graf)
                     if topic is not None:
-                        if topic.group(1).endswith('WATCHES/WARNINGS/ADVISORIES'):
-                            # TODO: consume grafs, formatting XX..., until '&&'
-                            grafs.append('<p><b>{}:</b> {}</p>'.format(topic.group(1), graf[topic.end():]))
-                        else:
-                            grafs.append('<p><b>{}:</b> {}</p>'.format(topic.group(1), graf[topic.end():]))
+                        grafs.append('<p><b>{}:</b> {}</p>'.format(topic.group(1), graf[topic.end():]))
                     else:
                         grafs.append('<p>{}</p>'.format(graf))
 
@@ -59,6 +57,33 @@ class NWSStoryProvider(StoryProvider):
             product['productName'],
             body_html='<p>{}</p>'.format('</p><p>'.join(grafs))
         )
+
+    def alert_stories(self) -> List[Story]:
+        alertResp = requests.get(
+                f"https://api.weather.gov/alerts/active/zone/{self.county}"
+        ).json()
+
+        stories = []
+        for alertBody in alertResp['features']:
+            alert = alertBody['properties']
+            if (self.county not in alert['geocode']['UGC']) and (self.fire_zone not in alert['geocode']['UGC']):
+                continue
+
+            stories.append(
+                Story(
+                    '{}: {}'.format(alert['response'], alert['event']),
+                    body_html='<p>{}</p><p>{}</p><p>{}</p>'.format(
+                        alert['headline'],
+                        # TODO: fix `* FOO...` titles
+                        '</p><p>'.join(alert['description'].split('\n\n')),
+                        alert['instruction'],
+                    ),
+                    byline=alert['senderName']
+                )
+            )
+
+        return stories
+
 
     def get_stories(self, limit: int = 5, **kwargs) -> List[Story]:
         # forecast
@@ -74,9 +99,9 @@ class NWSStoryProvider(StoryProvider):
             if weatherResp.get('properties'):
                 ok = True
                 break
-            print('got a weird weatherResp on attempt {}: {}'.format(attempt, weatherResp))
+            print('honk... got a weird weatherResp on attempt {}: {}'.format(attempt, weatherResp))
         if not ok:
-            print("couldn't get a good response in {} attempts... bailing.".format(attempts.len()))
+            print("honk!! couldn't get a good response in {} attempts... bailing.".format(attempts.len()))
         forecast = [
                 '<p><b>{}:</b> {}</p>'.format(period['name'], period['detailedForecast'])
                     for period in weatherResp['properties']['periods']
@@ -100,27 +125,7 @@ class NWSStoryProvider(StoryProvider):
                 )
             )
 
-        # alerts
-        alertResp = requests.get(
-                f"https://api.weather.gov/alerts/active/zone/{self.county}"
-        ).json()
-        
-        for alertBody in alertResp['features']:
-            alert = alertBody['properties']
-            if (self.county not in alert['geocode']['UGC']) and (self.fire_zone not in alert['geocode']['UGC']):
-                continue
-
-            stories.append(
-                Story(
-                    '{}: {}'.format(alert['response'], alert['event']),
-                    body_html='<p>{}</p><p>{}</p><p>{}</p>'.format(
-                        alert['headline'],
-                        # TODO: fix `* FOO...` titles
-                        '</p><p>'.join(alert['description'].split('\n\n')),
-                        alert['instruction'],
-                    ),
-                    byline=alert['senderName']
-                )
-            )
+        if self.alerts:
+            stories.extend(self.alert_stories())
 
         return stories

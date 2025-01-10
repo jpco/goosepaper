@@ -15,7 +15,7 @@
                 "since_days_ago": 0.5,
                 "username": "jordan",
                 "server": "https://neuromatch.social",
-                "limit_per": 8
+                "limit": 8
             }
         },
         {
