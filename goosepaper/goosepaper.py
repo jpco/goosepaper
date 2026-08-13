@@ -2,6 +2,7 @@ import datetime
 import io
 import pathlib
 import re
+import random
 import tempfile
 from html import escape
 from typing import List, Optional, Type, Union
@@ -13,6 +14,14 @@ from .styles import Style
 from .storyprovider.storyprovider import StoryProvider
 from .util import PlacementPreference
 
+from .version import __version__
+
+from ebooklib.plugins.base import BasePlugin
+from ebooklib.utils import parse_html_string
+from ebooklib import epub
+
+from lxml import etree
+import urllib
 
 def _get_style(style):
     if isinstance(style, str):
@@ -23,6 +32,41 @@ def _get_style(style):
         except Exception as err:
             raise ValueError(f"Invalid style {style}") from err
     return style_obj
+
+class PackImages(BasePlugin):
+    def html_before_write(self, book, chapter):
+        try:
+            tree = parse_html_string(chapter.content)
+        except:
+            return
+
+        root = tree.getroottree()
+        if len(root.find("body")) != 0:
+            body = tree.find("body")
+            for img in body.xpath("//img"):
+                src = img.get("src", "")
+                if urllib.parse.urlparse(src).scheme in ["http", "https"]:
+                    try:
+                        req = urllib.request.Request(src, headers={"User-Agent":
+                                                                   f"goosepaper/{__version__}"})
+                        with urllib.request.urlopen(req) as resp:
+                            imgdata = resp.read()
+                        # FIXME: detect or convert file format!
+                        filename = "{}.jpeg".format(random.randint(1, 65536))
+                        imgitem = epub.EpubItem(
+                                uid=filename,
+                                file_name=f"images/{filename}",
+                                media_type="image/jpeg",
+                                content=imgdata
+                        )
+                        book.add_item(imgitem)
+                        img.set("src", f"images/{filename}")
+                    except Exception as err:
+                        print(f"Sad honk :/ Failed to fetch image at {src}: {err}")
+
+            chapter.content = etree.tostring(tree,
+                                             pretty_print=True,
+                                             encoding="utf-8")
 
 
 class Goosepaper:
@@ -510,7 +554,6 @@ class Goosepaper:
             font_size: The font size to use for the paper. Default: 14
 
         """
-        from ebooklib import epub
 
         style_obj = _get_style(style)
 
@@ -569,10 +612,11 @@ class Goosepaper:
         book.toc = chapters
         book.add_item(epub.EpubNcx())
         book.add_item(epub.EpubNav())
-        book.spine = ["nav"] + chapters
+        book.spine = chapters
 
         if isinstance(filename, str):
-            epub.write_epub(filename, book)
+            epub.write_epub(filename, book, options={"plugins":
+                                                     [PackImages()]})
             return filename
         if isinstance(filename, io.BytesIO):
             tf = tempfile.NamedTemporaryFile(suffix=".epub")

@@ -174,6 +174,11 @@ def construct_story_providers_from_source_configs(source_configs):
                 ),
             },
         ),
+        "nws": (
+            "goosepaper.storyprovider.nws",
+            "NWSStoryProvider",
+            lambda options: dict(options),
+        ),
         "wikipedia": (
             "goosepaper.storyprovider.wikipedia",
             "WikipediaCurrentEventsStoryProvider",

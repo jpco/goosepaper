@@ -619,6 +619,10 @@ def _source_schema(source_type: str) -> Dict[str, Any]:
                 "clock_format",
             },
         },
+        "nws": {
+            "required": {"lat", "lon"},
+            "optional": {"units", "products", "alerts"},
+        },
         "wikipedia": {
             "required": set(),
             "optional": set(),
