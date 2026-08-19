@@ -75,3 +75,7 @@ article > .byline {
     padding-bottom: 0.12rem;
     border-bottom: 0.9pt solid #d9d9d9;
 }
+
+figcaption {
+    font-style: italic;
+}

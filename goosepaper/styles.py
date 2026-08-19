@@ -172,6 +172,12 @@ class Style:
             font-size: {float(font_size):.2f}pt;
             line-height: 1.42;
         }}
+        figcaption {{
+            font-style: italic;
+        }}
+        blockquote {{
+            font-style: italic; /* TODO: something better */
+        }}
 
         .story-headline,
         h1, h2, h3 {{

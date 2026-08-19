@@ -2,7 +2,7 @@ import datetime
 import io
 import pathlib
 import re
-import random
+import time
 import tempfile
 from html import escape
 from typing import List, Optional, Type, Union
@@ -40,6 +40,8 @@ class PackImages(BasePlugin):
         except:
             return
 
+        chapnum = hash(chapter.title)
+        picnum = 1
         root = tree.getroottree()
         if len(root.find("body")) != 0:
             body = tree.find("body")
@@ -51,8 +53,8 @@ class PackImages(BasePlugin):
                                                                    f"goosepaper/{__version__}"})
                         with urllib.request.urlopen(req) as resp:
                             imgdata = resp.read()
-                        # FIXME: detect or convert file format!
-                        filename = "{}.jpeg".format(random.randint(1, 65536))
+                        filename = "{}-{}.jpeg".format(chapnum, picnum)
+                        picnum += 1
                         imgitem = epub.EpubItem(
                                 uid=filename,
                                 file_name=f"images/{filename}",

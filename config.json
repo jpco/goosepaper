@@ -20,56 +20,56 @@
         {
             "type": "rss",
             "url": "https://weatherwest.com/feed/",
-            "limit": 2,
+            "since_days_ago": 1,
             "byline": "first",
             "body_source": "auto"
         },
         {
             "type": "rss",
             "url": "https://wasmoke.blogspot.com/feeds/posts/default",
-            "limit": 2,
+            "since_days_ago": 1,
             "byline": "first",
             "body_source": "auto"
         },
         {
             "type": "rss",
             "url": "https://hcn.org/rss",
-            "limit": 2,
+            "since_days_ago": 1,
             "byline": "first",
             "body_source": "auto"
         },
         {
             "type": "rss",
             "url": "https://civileats.com/feed",
-            "limit": 2,
+            "since_days_ago": 1,
             "byline": "first",
             "body_source": "auto"
         },
         {
             "type": "rss",
             "url": "https://solar.lowtechmagazine.com/posts/index.xml",
-            "limit": 2,
+            "since_days_ago": 1,
             "byline": "first",
             "body_source": "auto"
         },
         {
             "type": "rss",
             "url": "https://theurbanist.org/feed",
-            "limit": 2,
+            "since_days_ago": 1,
             "byline": "first",
             "body_source": "auto"
         },
         {
             "type": "rss",
             "url": "https://salish-current.org/feed/",
-            "limit": 2,
+            "since_days_ago": 1,
             "byline": "first",
             "body_source": "auto"
         },
         {
             "type": "rss",
             "url": "https://pluralistic.net/feed/",
-            "limit": 2,
+            "since_days_ago": 1,
             "byline": "first",
             "body_source": "auto"
         }
