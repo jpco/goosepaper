@@ -40,7 +40,7 @@ class PackImages(BasePlugin):
         except:
             return
 
-        chapnum = hash(chapter.title)
+        chapnum = uuid4().hex
         picnum = 1
         root = tree.getroottree()
         if len(root.find("body")) != 0:

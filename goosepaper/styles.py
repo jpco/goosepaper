@@ -172,16 +172,31 @@ class Style:
             font-size: {float(font_size):.2f}pt;
             line-height: 1.42;
         }}
-        figcaption {{
+        figure {{
+            margin-left: 1em;
+            margin-right: 1em;
+            border: 1px solid black;
+        }}
+        .post-caption, figcaption {{
+            text-align: center;
             font-style: italic;
         }}
         blockquote {{
-            font-style: italic; /* TODO: something better */
+            margin-left: 1em;
+            margin-right: 1em;
+            font-style: italic;
+        }}
+        .kg-bookmark-card {{
+            display: none;  /* will this work? */
         }}
 
         .story-headline,
         h1, h2, h3 {{
             font-family: {theme_fonts["display"]};
+        }}
+        h3 {{
+            font-style: italic;
+            font-weight: 400;
         }}
 
         .byline {{

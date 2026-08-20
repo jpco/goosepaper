@@ -47,6 +47,13 @@
         },
         {
             "type": "rss",
+            "url": "https://magiccanoe.org/feed",
+            "since_days_ago": 1,
+            "byline": "first",
+            "body_source": "auto"
+        },
+        {
+            "type": "rss",
             "url": "https://solar.lowtechmagazine.com/posts/index.xml",
             "since_days_ago": 1,
             "byline": "first",
