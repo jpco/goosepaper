@@ -544,6 +544,7 @@ class Goosepaper:
         style: Union[str, Type[Style]] = "",
         font_size: int = 14,
         body_font: str | None = None,
+        table_of_contents: bool = False,
     ) -> Optional[str]:
         """
         Render the current Goosepaper to an epub file on disk.
@@ -614,7 +615,7 @@ class Goosepaper:
         book.toc = chapters
         book.add_item(epub.EpubNcx())
         book.add_item(epub.EpubNav())
-        book.spine = chapters
+        book.spine = (["nav"] if table_of_contents else []) + chapters
 
         if isinstance(filename, str):
             epub.write_epub(filename, book, options={"plugins":

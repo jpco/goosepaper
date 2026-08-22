@@ -52,6 +52,7 @@ def main(args=None):
                 font_size=config.paper.font_size,
                 style=config.paper.style,
                 body_font=config.paper.body_font,
+                table_of_contents=config.paper.table_of_contents,
             )
         else:
             print(f"Unknown file extension '{config.output.split('.')[-1]}'.")

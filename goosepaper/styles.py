@@ -184,10 +184,9 @@ class Style:
         blockquote {{
             margin-left: 1em;
             margin-right: 1em;
-            font-style: italic;
         }}
-        .kg-bookmark-card {{
-            display: none;  /* will this work? */
+        .kg-bookmark-card, .elementor {{
+            display: none;  /* FIXME: band-aid? */
         }}
 
         .story-headline,
