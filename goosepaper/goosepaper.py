@@ -40,12 +40,10 @@ class PackImages(BasePlugin):
         except:
             return
 
-        chapnum = uuid4().hex
-        picnum = 1
-        root = tree.getroottree()
-        if len(root.find("body")) != 0:
-            body = tree.find("body")
-            for img in body.xpath("//img"):
+        if len(tree.getroottree().find("body")) != 0:
+            chapnum = uuid4().hex
+            picnum = 1
+            for img in tree.find("body").xpath("//img"):
                 src = img.get("src", "")
                 if urllib.parse.urlparse(src).scheme in ["http", "https"]:
                     try:
@@ -53,6 +51,8 @@ class PackImages(BasePlugin):
                                                                    f"goosepaper/{__version__}"})
                         with urllib.request.urlopen(req) as resp:
                             imgdata = resp.read()
+                        # Just straight-up lie about the image type and let the
+                        # optimizer fix it up
                         filename = "{}-{}.jpeg".format(chapnum, picnum)
                         picnum += 1
                         imgitem = epub.EpubItem(
