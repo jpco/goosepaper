@@ -27,7 +27,7 @@ dependencies = [
   "lxml[html_clean]",
   "weasyprint",
   "ebooklib",
-  "readability-lxml",
+  "readability-lxml>=0.9",
   "remarkapy>=0.2.2,<0.3",
 ]
 

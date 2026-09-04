@@ -5,6 +5,7 @@
         "title": "Graily Goose",
         "style": "Academy",
         "table_of_contents": false,
+	"render_links": true,
         "layout": "1col",
         "page_profile": "remarkable1"
     },

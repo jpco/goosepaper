@@ -33,6 +33,79 @@ def _get_style(style):
             raise ValueError(f"Invalid style {style}") from err
     return style_obj
 
+
+def links_appendix(book, chapters):
+    """
+    Takes a list of EpubHtml chapters and scans them for HTTP links.  Changes
+    those links into a set of endnotes pointing to references in a new chapter.
+    """
+    # TODO: integrate this with existing functions/methods better, like existing
+    # story_anchor stuff.
+    links = [{"title": chapter.title, "filename": chapter.file_name, "links": []} for chapter in chapters]
+    for i, chapter in enumerate(chapters):
+        try:
+            tree = parse_html_string(chapter.content)
+        except:
+            continue
+
+        if len(tree.getroottree().find("body")) != 0:
+            for anchor in tree.find("body").xpath("//a"):
+                href = anchor.get("href", "")
+                if urllib.parse.urlparse(href).scheme in ["http", "https"]:
+                    if (anchor.text is None
+                            or anchor.text == ""
+                            or anchor.text == href):
+                        continue
+
+                    links[i]["links"].append(href)
+                    a = etree.Element("a",
+                                      id=f"ref-use{i}-{len(links[i]["links"])}",
+                                      href=f"references.xhtml#ref{i}-{len(links[i]["links"])}")
+                    a.text = str(len(links[i]["links"]))
+                    a.tail = "]" + (anchor.tail if anchor.tail is not None else
+                                    "")
+                    anchor.tail = " ["
+                    anchor.addnext(a)
+            chapter.content = etree.tostring(tree,
+                                             pretty_print=True,
+                                             encoding="utf-8")
+
+    sections = []
+    for i, chapter in enumerate(links):
+        fmtlinks = []
+        for j, link in enumerate(chapter["links"]):
+            fmtlinks.append(
+                f"""
+                <p id="#ref{i}-{j+1}">
+                [<a href="{chapter["filename"]}#ref-use{i}-{j+1}">{j+1}</a>] {chapter["links"][j]}
+                </p>
+                """
+            )
+        sections.append(
+            f"""
+            <h2>{chapter["title"]}</h2>
+            <div class="notes-list">
+            {"".join(fmtlinks)}
+            </div>
+            """
+        )
+
+    appendix = epub.EpubHtml(
+        title="References",
+        file_name="references.xhtml",
+        lang="en",
+    )
+    appendix.content = f"""
+    <h1>References</h1>
+    {"".join(sections)}
+    """
+
+    book.add_item(appendix)
+    chapters.append(appendix)
+    return chapters
+
+
+
 class PackImages(BasePlugin):
     def html_before_write(self, book, chapter):
         try:
@@ -545,6 +618,7 @@ class Goosepaper:
         font_size: int = 14,
         body_font: str | None = None,
         table_of_contents: bool = False,
+        render_links: bool = True,
     ) -> Optional[str]:
         """
         Render the current Goosepaper to an epub file on disk.
@@ -612,18 +686,20 @@ class Goosepaper:
             book.add_item(chapter)
             chapters.append(chapter)
 
+        if render_links:
+            chapters = links_appendix(book, chapters)
+
         book.toc = chapters
         book.add_item(epub.EpubNcx())
         book.add_item(epub.EpubNav())
         book.spine = (["nav"] if table_of_contents else []) + chapters
 
         if isinstance(filename, str):
-            epub.write_epub(filename, book, options={"plugins":
-                                                     [PackImages()]})
+            epub.write_epub(filename, book, options={"plugins": [PackImages()]})
             return filename
         if isinstance(filename, io.BytesIO):
             tf = tempfile.NamedTemporaryFile(suffix=".epub")
-            epub.write_epub(tf, book)
+            epub.write_epub(tf, book, options={"plugins": [PackImages()]})
             tf.seek(0)
             filename.write(tf.read())
             return None

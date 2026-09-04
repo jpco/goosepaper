@@ -168,7 +168,7 @@ def _story_from_response(
         headline = entry["title"] if prefer_feed_title else (doc.title() or entry["title"])
         body_html = doc.summary() or fallback_body_html
         body_html = _make_urls_absolute(body_html, response.url)
-    except Exception:
+    except Exception as err:
         headline = entry["title"]
         body_html = fallback_body_html
 

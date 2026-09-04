@@ -28,6 +28,7 @@ class PaperSettings:
     font_size: int = 14
     body_font: Optional[str] = None
     table_of_contents: bool = False
+    render_links: bool = False
     layout: str = "auto"
     page_profile: str = "remarkable2"
 
@@ -50,6 +51,8 @@ class PaperSettings:
             raise ValueError("Paper body_font must be a non-empty string or null.")
         if not isinstance(self.table_of_contents, bool):
             raise ValueError("Paper table_of_contents must be a boolean.")
+        if not isinstance(self.render_links, bool):
+            raise ValueError("Paper render_links must be a boolean.")
         if self.layout not in LAYOUT_CHOICES:
             raise ValueError(
                 "Paper layout must be one of: "
@@ -71,6 +74,7 @@ class PaperSettings:
             "font_size": self.font_size,
             "body_font": self.body_font,
             "table_of_contents": self.table_of_contents,
+            "render_links": self.render_links,
             "layout": self.layout,
             "page_profile": self.page_profile,
         }
@@ -484,6 +488,7 @@ def _parse_paper_settings(raw: Any) -> PaperSettings:
             "font_size",
             "body_font",
             "table_of_contents",
+            "render_links",
             "layout",
             "page_profile",
         },
@@ -498,6 +503,7 @@ def _parse_paper_settings(raw: Any) -> PaperSettings:
     table_of_contents = section.get(
         "table_of_contents", PaperSettings.table_of_contents
     )
+    render_links = section.get("render_links", PaperSettings.render_links)
     layout = section.get("layout", PaperSettings.layout)
     page_profile = section.get("page_profile", PaperSettings.page_profile)
 
@@ -508,6 +514,7 @@ def _parse_paper_settings(raw: Any) -> PaperSettings:
         font_size=font_size,
         body_font=body_font,
         table_of_contents=table_of_contents,
+        render_links=render_links,
         layout=layout,
         page_profile=page_profile,
     )
