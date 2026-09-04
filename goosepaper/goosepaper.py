@@ -59,8 +59,8 @@ def links_appendix(book, chapters):
 
                     links[i]["links"].append(href)
                     a = etree.Element("a",
-                                      id=f"ref-use{i}-{len(links[i]["links"])}",
-                                      href=f"references.xhtml#ref{i}-{len(links[i]["links"])}")
+                                      id=f"ref-use{i+1}-{len(links[i]["links"])}",
+                                      href=f"references.xhtml#ref{i+1}-{len(links[i]["links"])}")
                     a.text = str(len(links[i]["links"]))
                     a.tail = "]" + (anchor.tail if anchor.tail is not None else
                                     "")
@@ -76,19 +76,21 @@ def links_appendix(book, chapters):
         for j, link in enumerate(chapter["links"]):
             fmtlinks.append(
                 f"""
-                <p id="#ref{i}-{j+1}">
-                [<a href="{chapter["filename"]}#ref-use{i}-{j+1}">{j+1}</a>] {chapter["links"][j]}
+                <p id="#ref{i+1}-{j+1}">
+                [<a href="{chapter["filename"]}#ref-use{i+1}-{j+1}">{j+1}</a>]
+                {chapter["links"][j]}
                 </p>
                 """
             )
-        sections.append(
-            f"""
-            <h2>{chapter["title"]}</h2>
-            <div class="notes-list">
-            {"".join(fmtlinks)}
-            </div>
-            """
-        )
+        if len(fmtlinks) > 0:
+            sections.append(
+                f"""
+                <h2>{chapter["title"]}</h2>
+                <div class="notes-list">
+                {"".join(fmtlinks)}
+                </div>
+                """
+            )
 
     appendix = epub.EpubHtml(
         title="References",
