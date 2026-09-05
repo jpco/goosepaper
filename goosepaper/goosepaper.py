@@ -52,9 +52,17 @@ def links_appendix(book, chapters):
             for anchor in tree.find("body").xpath("//a"):
                 href = anchor.get("href", "")
                 if urllib.parse.urlparse(href).scheme in ["http", "https"]:
+                    # Remove bogus <u> tags inside of <a> tags (whyyy)
                     if (anchor.text is None
-                            or anchor.text == ""
-                            or anchor.text == href):
+                            and len(list(anchor)) == 1
+                            and anchor[0].tag == "u"):
+                        anchor.text = anchor[0].text
+                        anchor.remove(anchor[0])
+
+                    # skip links if the element doesn't even have text
+                    if (anchor.text_content() is None
+                            or anchor.text_content() == ""
+                            or anchor.text_content() == href):
                         continue
 
                     links[i]["links"].append(href)
@@ -65,6 +73,7 @@ def links_appendix(book, chapters):
                     a.tail = "]" + (anchor.tail if anchor.tail is not None else
                                     "")
                     anchor.tail = " ["
+                    anchor.attrib.pop("href")
                     anchor.addnext(a)
             chapter.content = etree.tostring(tree,
                                              pretty_print=True,
@@ -76,7 +85,7 @@ def links_appendix(book, chapters):
         for j, link in enumerate(chapter["links"]):
             fmtlinks.append(
                 f"""
-                <p id="#ref{i+1}-{j+1}">
+                <p id="ref{i+1}-{j+1}">
                 [<a href="{chapter["filename"]}#ref-use{i+1}-{j+1}">{j+1}</a>]
                 {chapter["links"][j]}
                 </p>
