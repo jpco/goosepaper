@@ -23,6 +23,8 @@ from ebooklib import epub
 from lxml import etree
 import urllib
 
+from PIL import Image
+
 def _get_style(style):
     if isinstance(style, str):
         style_obj = Style(style)
@@ -134,16 +136,32 @@ class PackImages(BasePlugin):
                         req = urllib.request.Request(src, headers={"User-Agent":
                                                                    f"goosepaper/{__version__}"})
                         with urllib.request.urlopen(req) as resp:
-                            imgdata = resp.read()
-                        # Just straight-up lie about the image type and let the
-                        # optimizer fix it up
-                        filename = "{}-{}.jpeg".format(chapnum, picnum)
+                            image = Image.open(io.BytesIO(resp.read()))
+                        if image.mode not in ("RGB", "L"):
+                            has_transparency = (
+                                    image.mode in ("RGBA", "LA", "PA") or
+                                    "transparency" in image.info
+                            )
+                            if has_transparency:
+                                background = Image.new("RGB", image.size, (255,
+                                                                           255,
+                                                                           255))
+                                rgba_image = image.convert("RGBA")
+                                background.paste(rgba_image,
+                                                 mask=rgba_image.split()[-1])
+                                image = background
+                            else:
+                                image = image.convert("RGB")
+                        image.thumbnail((480, 800), Image.LANCZOS)
+                        jpeg_buffer = io.BytesIO()
+                        image.save(jpeg_buffer, format="JPEG", quality=80)
+                        filename = f"{chapnum}-{picnum}.jpeg"
                         picnum += 1
                         imgitem = epub.EpubItem(
                                 uid=filename,
                                 file_name=f"images/{filename}",
                                 media_type="image/jpeg",
-                                content=imgdata
+                                content=jpeg_buffer.getvalue(),
                         )
                         book.add_item(imgitem)
                         img.set("src", f"images/{filename}")
