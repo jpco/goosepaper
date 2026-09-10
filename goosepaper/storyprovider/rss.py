@@ -5,6 +5,7 @@ from typing import List, Optional
 import bs4
 import feedparser
 import requests
+import trafilatura
 from readability import Document
 
 from .storyprovider import StoryProvider
@@ -166,9 +167,15 @@ def _story_from_response(
         # returns just the site name for every article on some blogs); the feed's
         # own <title> is usually accurate, so let callers prefer it outright.
         headline = entry["title"] if prefer_feed_title else (doc.title() or entry["title"])
-        body_html = doc.summary() or fallback_body_html
+        body_html = trafilatura.extract(page_text, output_format="html",
+                                        include_comments=False,
+                                        include_formatting=True,
+                                        include_links=True,
+                                        include_images=True)
+        # body_html = doc.summary() or fallback_body_html
         body_html = _make_urls_absolute(body_html, response.url)
     except Exception as err:
+        print(f"honk?! trafilatura exception! {err}")
         headline = entry["title"]
         body_html = fallback_body_html
 

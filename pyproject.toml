@@ -28,6 +28,7 @@ dependencies = [
   "weasyprint",
   "ebooklib",
   "readability-lxml>=0.9",
+  "trafilatura",
   "remarkapy>=0.2.2,<0.3",
 ]
 
