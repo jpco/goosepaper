@@ -67,16 +67,19 @@ def links_appendix(book, chapters):
                             or anchor.text_content() == href):
                         continue
 
-                    links[i]["links"].append(href)
-                    a = etree.Element("a",
-                                      id=f"ref-use{i+1}-{len(links[i]["links"])}",
-                                      href=f"references.xhtml#ref{i+1}-{len(links[i]["links"])}")
-                    a.text = str(len(links[i]["links"]))
-                    a.tail = "]" + (anchor.tail if anchor.tail is not None else
-                                    "")
-                    anchor.tail = " ["
                     anchor.attrib.pop("href")
-                    anchor.addnext(a)
+                    # only add appendix link if it's the first instance of this
+                    # destination in the story
+                    if href not in links[i]["links"]:
+                        links[i]["links"].append(href)
+                        a = etree.Element("a",
+                                          id=f"ref-use{i+1}-{len(links[i]["links"])}",
+                                          href=f"references.xhtml#ref{i+1}-{len(links[i]["links"])}")
+                        a.text = str(len(links[i]["links"]))
+                        a.tail = "]" + (anchor.tail if anchor.tail is not None else
+                                        "")
+                        anchor.tail = " ["
+                        anchor.addnext(a)
             chapter.content = etree.tostring(tree,
                                              pretty_print=True,
                                              encoding="utf-8")
