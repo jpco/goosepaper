@@ -76,9 +76,16 @@ def links_appendix(book, chapters):
                                           id=f"ref-use{i+1}-{len(links[i]["links"])}",
                                           href=f"references.xhtml#ref{i+1}-{len(links[i]["links"])}")
                         a.text = str(len(links[i]["links"]))
-                        a.tail = "]" + (anchor.tail if anchor.tail is not None else
-                                        "")
-                        anchor.tail = " ["
+                        if (anchor.tail is None or anchor.tail.startswith(" ") or
+                                not anchor.text_content().endswith(" ")):
+                            if anchor.tail is None:
+                                a.tail = "]"
+                            else:
+                                a.tail = "]" + anchor.tail
+                            anchor.tail = " ["
+                        else:
+                            a.tail = "] " + anchor.tail
+                            anchor.tail = "["
                         anchor.addnext(a)
             chapter.content = etree.tostring(tree,
                                              pretty_print=True,
