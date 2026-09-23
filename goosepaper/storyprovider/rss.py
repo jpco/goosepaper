@@ -25,6 +25,7 @@ class RSSFeedStoryProvider(StoryProvider):
         byline: str = "all",
         body_source: str = "auto",
         prefer_feed_title: bool = False,
+        extraction: str = "readability",
     ) -> None:
         if byline not in RSS_BYLINE_MODES:
             raise ValueError(
@@ -40,6 +41,7 @@ class RSSFeedStoryProvider(StoryProvider):
         self.byline_mode = byline
         self.body_source = body_source
         self.prefer_feed_title = prefer_feed_title
+        self.extraction = extraction
         self._since = (
             datetime.datetime.now() - datetime.timedelta(days=since_days_ago)
             if since_days_ago
@@ -65,6 +67,7 @@ class RSSFeedStoryProvider(StoryProvider):
                 date,
                 body_source=self.body_source,
                 prefer_feed_title=self.prefer_feed_title,
+                extraction=self.extraction,
             )
 
             if story is None:
@@ -87,6 +90,7 @@ def _story_from_entry(
     date: datetime.datetime,
     body_source: str = "auto",
     prefer_feed_title: bool = False,
+    extraction: str = "readability",
 ) -> Optional[Story]:
     if body_source == "summary":
         return Story(
@@ -143,6 +147,7 @@ def _story_from_entry(
         date,
         fallback_body_html=fallback_body_html,
         prefer_feed_title=prefer_feed_title,
+        extraction=extraction,
     )
 
 
@@ -153,6 +158,7 @@ def _story_from_response(
     date: datetime.datetime,
     fallback_body_html: str = "",
     prefer_feed_title: bool = False,
+    extraction: str = "readability",
 ) -> Story:
     page_text = response.text
     if not page_text:
@@ -167,12 +173,15 @@ def _story_from_response(
         # returns just the site name for every article on some blogs); the feed's
         # own <title> is usually accurate, so let callers prefer it outright.
         headline = entry["title"] if prefer_feed_title else (doc.title() or entry["title"])
-        body_html = trafilatura.extract(page_text, output_format="html",
-                                        include_comments=False,
-                                        include_formatting=True,
-                                        include_links=True,
-                                        include_images=True)
-        # body_html = doc.summary() or fallback_body_html
+        if extraction == "trafilatura":
+            # FIXME: fallback_body_html?
+            body_html = trafilatura.extract(page_text, output_format="html",
+                                            include_comments=False,
+                                            include_formatting=True,
+                                            include_links=True,
+                                            include_images=True)
+        else:
+            body_html = doc.summary() or fallback_body_html
         body_html = _make_urls_absolute(body_html, response.url)
     except Exception as err:
         print(f"honk?! trafilatura exception! {err}")

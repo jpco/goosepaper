@@ -592,7 +592,13 @@ def _source_schema(source_type: str) -> Dict[str, Any]:
         },
         "rss": {
             "required": {"url"},
-            "optional": {"limit", "since_days_ago", "byline", "body_source"},
+            "optional": {
+                "limit",
+                "since_days_ago",
+                "byline",
+                "body_source",
+                "extraction",
+            },
         },
         "mastodon": {
             "required": {"server", "username"},
@@ -690,6 +696,7 @@ def _validate_source_options(source_type: str, options: Dict[str, Any], index: i
         ),
         "days": lambda value: _validate_positive_int(value, f"source #{index} days"),
         "clock_format": lambda value: _validate_weather_clock_format(value, index),
+        "extraction": lambda value: _validate_extraction_method(value, index),
     }
 
     for key, value in options.items():
@@ -764,6 +771,14 @@ def _validate_rss_byline(value: Any, index: int):
     if value not in {"all", "none", "first"}:
         raise ConfigError(
             f'source #{index} byline must be one of "all", "none", or "first".'
+        )
+
+
+def _validate_extraction_method(value: Any, index: int):
+    if value not in {"readability", "trafilatura"}:
+        raise ConfigError(
+                f'source #{index} extraction method must be one of '
+                '"readability" or "trafilatura".'
         )
 
 

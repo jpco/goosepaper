@@ -44,7 +44,8 @@
             "url": "https://civileats.com/feed",
             "since_days_ago": 1,
             "byline": "first",
-            "body_source": "auto"
+            "body_source": "auto",
+            "extraction": "trafilatura"
         },
         {
             "type": "rss",
@@ -55,10 +56,18 @@
         },
         {
             "type": "rss",
-            "url": "https://solar.lowtechmagazine.com/posts/index.xml",
+            "url": "https://biographic.com/feed",
             "since_days_ago": 1,
             "byline": "first",
             "body_source": "auto"
+        },
+        {
+            "type": "rss",
+            "url": "https://solar.lowtechmagazine.com/posts/index.xml",
+            "since_days_ago": 1,
+            "byline": "first",
+            "body_source": "auto",
+            "extraction": "trafilatura"
         },
         {
             "type": "rss",
@@ -70,6 +79,13 @@
         {
             "type": "rss",
             "url": "https://salish-current.org/feed/",
+            "since_days_ago": 1,
+            "byline": "first",
+            "body_source": "auto"
+        },
+        {
+            "type": "rss",
+            "url": "https://disconnect.blog/feed",
             "since_days_ago": 1,
             "byline": "first",
             "body_source": "auto"
