@@ -29,7 +29,8 @@ dependencies = [
   "ebooklib",
   "readability-lxml>=0.9",
   "trafilatura",
-  "remarkapy>=0.2.2,<0.3",
+  "remarkapy>=0.3.1,<0.4",
+  "pillow",
 ]
 
 [project.scripts]

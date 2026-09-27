@@ -41,14 +41,6 @@
         },
         {
             "type": "rss",
-            "url": "https://civileats.com/feed",
-            "since_days_ago": 1,
-            "byline": "first",
-            "body_source": "auto",
-            "extraction": "trafilatura"
-        },
-        {
-            "type": "rss",
             "url": "https://magiccanoe.org/feed",
             "since_days_ago": 1,
             "byline": "first",
@@ -60,6 +52,14 @@
             "since_days_ago": 1,
             "byline": "first",
             "body_source": "auto"
+        },
+        {
+            "type": "rss",
+            "url": "https://civileats.com/feed",
+            "since_days_ago": 1,
+            "byline": "first",
+            "body_source": "auto",
+            "extraction": "trafilatura"
         },
         {
             "type": "rss",

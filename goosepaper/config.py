@@ -6,6 +6,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence
 
+from goosepaper.goosepaper import DEFAULT_DATETIME_FORMAT
 from goosepaper.layout import LAYOUT_CHOICES
 from goosepaper.styles import PAGE_PROFILE_CHOICES
 from goosepaper.util import load_config_file, registered_story_providers
@@ -31,12 +32,19 @@ class PaperSettings:
     render_links: bool = False
     layout: str = "auto"
     page_profile: str = "remarkable2"
+    # strftime() format string for the generation-time stamp appended under the subtitle - e.g.
+    # "%d.%m.%Y" for a date-only German format. None/"" omits the stamp entirely (not every
+    # locale considers a generation timestamp normal on a daily paper). Defaults to Goosepaper's
+    # own DEFAULT_DATETIME_FORMAT, so existing configs see no behavior change.
+    datetime_format: Optional[str] = DEFAULT_DATETIME_FORMAT
 
     def __post_init__(self):
         if self.title is not None and not isinstance(self.title, str):
             raise ValueError("Paper title must be a string or null.")
         if self.subtitle is not None and not isinstance(self.subtitle, str):
             raise ValueError("Paper subtitle must be a string or null.")
+        if self.datetime_format is not None and not isinstance(self.datetime_format, str):
+            raise ValueError("Paper datetime_format must be a string or null.")
         if not isinstance(self.style, str) or not self.style:
             raise ValueError("Paper style must be a non-empty string.")
         if (
@@ -77,6 +85,7 @@ class PaperSettings:
             "render_links": self.render_links,
             "layout": self.layout,
             "page_profile": self.page_profile,
+            "datetime_format": self.datetime_format,
         }
 
 
@@ -491,6 +500,7 @@ def _parse_paper_settings(raw: Any) -> PaperSettings:
             "render_links",
             "layout",
             "page_profile",
+            "datetime_format",
         },
         "paper",
     )
@@ -506,6 +516,7 @@ def _parse_paper_settings(raw: Any) -> PaperSettings:
     render_links = section.get("render_links", PaperSettings.render_links)
     layout = section.get("layout", PaperSettings.layout)
     page_profile = section.get("page_profile", PaperSettings.page_profile)
+    datetime_format = section.get("datetime_format", PaperSettings.datetime_format)
 
     return PaperSettings(
         title=title,
@@ -517,6 +528,7 @@ def _parse_paper_settings(raw: Any) -> PaperSettings:
         render_links=render_links,
         layout=layout,
         page_profile=page_profile,
+        datetime_format=datetime_format,
     )
 
 
@@ -640,6 +652,10 @@ def _source_schema(source_type: str) -> Dict[str, Any]:
             "required": set(),
             "optional": set(),
         },
+        "comic": {
+            "required": {"comic_type"},
+            "optional": {"comic_name"},
+        },
     }
     if source_type in schemas:
         return schemas[source_type]
@@ -697,6 +713,8 @@ def _validate_source_options(source_type: str, options: Dict[str, Any], index: i
         "days": lambda value: _validate_positive_int(value, f"source #{index} days"),
         "clock_format": lambda value: _validate_weather_clock_format(value, index),
         "extraction": lambda value: _validate_extraction_method(value, index),
+        "comic_type": lambda value: _validate_comic_type(value, index),
+        "comic_name": lambda value: _validate_string(value, f"source #{index} comic_name"),
     }
 
     for key, value in options.items():
@@ -706,6 +724,20 @@ def _validate_source_options(source_type: str, options: Dict[str, Any], index: i
 
     if source_type == "wikipedia" and options:
         raise ConfigError("Wikipedia sources do not accept any additional fields.")
+
+    if source_type == "comic":
+        comic_type = options.get("comic_type")
+        requires_comic_name = comic_type in {"gocomics", "arcamax"}
+        has_comic_name = "comic_name" in options
+        if requires_comic_name and not has_comic_name:
+            raise ConfigError(
+                f'Source #{index}: comic_type "{comic_type}" requires a "comic_name" - the '
+                'comic\'s own slug on that site, e.g. "garfield" or "calvinandhobbes".'
+            )
+        if not requires_comic_name and has_comic_name:
+            raise ConfigError(
+                f'Source #{index}: comic_type "{comic_type}" does not accept "comic_name".'
+            )
 
 
 def _validate_folder(folder: Optional[str], context: str):
@@ -757,6 +789,18 @@ def _validate_weather_mode(value: Any, index: int):
     if value not in {"summary", "hourly", "daily", "hourly_daily"}:
         raise ConfigError(
             f'source #{index} mode must be one of "summary", "hourly", "daily", or "hourly_daily".'
+        )
+
+
+_COMIC_TYPES = {"xkcd", "gocomics", "arcamax"}
+
+
+def _validate_comic_type(value: Any, index: int):
+    if value not in _COMIC_TYPES:
+        raise ConfigError(
+            f"source #{index} comic_type must be one of "
+            + ", ".join(f'"{t}"' for t in sorted(_COMIC_TYPES))
+            + "."
         )
 
 
